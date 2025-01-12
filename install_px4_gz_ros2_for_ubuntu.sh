@@ -61,6 +61,12 @@ sudo apt install ros-jazzy-desktop -y
 sudo apt install ros-dev-tools -y
 source /opt/ros/jazzy/setup.bash && echo "source /opt/ros/jazzy/setup.bash" >> .bashrc
 
+git clone https://github.com/eProsima/Fast-CDR.git
+cd Fast-CDR
+mkdir build && cd build
+cmake ..
+make
+sudo make install
 
 cd
 git clone https://github.com/eProsima/Micro-XRCE-DDS-Agent.git
