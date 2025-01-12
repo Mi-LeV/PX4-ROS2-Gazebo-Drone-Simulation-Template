@@ -58,6 +58,12 @@ source /opt/ros/humble/setup.bash && echo "source /opt/ros/humble/setup.bash" >>
 
 pip install --user -U empy==3.3.4 pyros-genmsg==0.5.8 setuptools==70.0.0 opencv-python
 
+git clone https://github.com/eProsima/Fast-CDR.git
+cd Fast-CDR
+mkdir build && cd build
+cmake ..
+make
+sudo make install
 
 cd
 git clone https://github.com/eProsima/Micro-XRCE-DDS-Agent.git
