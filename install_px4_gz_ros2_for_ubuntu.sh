@@ -25,8 +25,13 @@ sudo apt-get install gz-harmonic -y
 
 cd
 sudo apt-get install git python3-pip -y
-git clone --depth 1 --branch v1.15.2 https://github.com/PX4/PX4-Autopilot.git --recursive
+git clone --depth 1 --branch v1.15.3 https://github.com/PX4/PX4-Autopilot.git --recursive
 cd PX4-Autopilot/
+# add a fix for ubuntu 24
+set +e
+git fetch origin main
+set -e
+git show 058fe54:Tools/setup/ubuntu.sh > Tools/setup/ubuntu.sh
 #git submodule foreach git pull origin main
 bash ./Tools/setup/ubuntu.sh --no-sim-tools
 make px4_sitl
@@ -52,12 +57,16 @@ set +e
 sudo apt-get update -y
 set -e
 sudo apt upgrade -y
-sudo apt install ros-humble-desktop -y
+sudo apt install ros-jazzy-desktop -y
 sudo apt install ros-dev-tools -y
-source /opt/ros/humble/setup.bash && echo "source /opt/ros/humble/setup.bash" >> .bashrc
+source /opt/ros/jazzy/setup.bash && echo "source /opt/ros/jazzy/setup.bash" >> .bashrc
 
-pip install --user -U empy==3.3.4 pyros-genmsg==0.5.8 setuptools==70.0.0 opencv-python
-
+git clone https://github.com/eProsima/Fast-CDR.git
+cd Fast-CDR
+mkdir build && cd build
+cmake ..
+make
+sudo make install
 
 cd
 git clone https://github.com/eProsima/Micro-XRCE-DDS-Agent.git
@@ -71,7 +80,7 @@ sudo ldconfig /usr/local/lib/
 cd
 
 
-sudo apt install python3-colcon-clean -y
+sudo apt install python3-colcon-clean python3-opencv -y
 
 
 sudo apt autoremove -y
