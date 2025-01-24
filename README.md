@@ -82,6 +82,7 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
 
 - To build only the `my_offboard_ctrl` package:
   ```bash
+  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2
   colcon build --packages-select my_offboard_ctrl
   source install/local_setup.bash
   ros2 run my_offboard_ctrl offboard_ctrl_example
