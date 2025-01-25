@@ -54,7 +54,7 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
   ```bash
   PX4_SYS_AUTOSTART=4010 \
   PX4_SIM_MODEL=gz_x500_down_cam \
-  PX4_GZ_MODEL_POSE="2.2,3,0.1,0,0,0.9" \
+  PX4_GZ_MODEL_POSE="2.2,2.5,0.1,0,0,1.57" \
   PX4_GZ_WORLD=test_world \
   ~/PX4-Autopilot/build/px4_sitl_default/bin/px4
   ```
