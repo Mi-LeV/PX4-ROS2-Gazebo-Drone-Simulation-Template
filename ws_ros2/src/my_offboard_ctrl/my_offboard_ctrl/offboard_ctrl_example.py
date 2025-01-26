@@ -10,6 +10,11 @@ import cv2
 from .gzcam import GzCam
 import threading
 
+from .line_following import process_image_line, move_drone_line
+
+
+headless = False
+cam = None
 
 class OffboardControl(Node):
     """Node for controlling a vehicle in offboard mode."""
@@ -40,10 +45,13 @@ class OffboardControl(Node):
             VehicleStatus, '/fmu/out/vehicle_status', self.vehicle_status_callback, qos_profile)
 
         # Initialize variables
+        global headless
+        headless = self.declare_parameter('headless', False).get_parameter_value().bool_value
+        
         self.offboard_setpoint_counter = 0
         self.vehicle_local_position = VehicleLocalPosition()
         self.vehicle_status = VehicleStatus()
-        self.takeoff_height = -1.5
+        self.takeoff_height = -1
 
         # Create a timer to publish control commands
         self.timer = self.create_timer(0.1, self.timer_callback)
@@ -82,8 +90,8 @@ class OffboardControl(Node):
     def publish_offboard_control_heartbeat_signal(self):
         """Publish the offboard control mode."""
         msg = OffboardControlMode()
-        msg.position = True
-        msg.velocity = False
+        msg.position = False
+        msg.velocity = True
         msg.acceleration = False
         msg.attitude = False
         msg.body_rate = False
@@ -98,6 +106,16 @@ class OffboardControl(Node):
         msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
         self.trajectory_setpoint_publisher.publish(msg)
         self.get_logger().info(f"Publishing position setpoints {[x, y, z]}")
+    
+    def publish_velocity_setpoint(self, x: float, y: float, z: float):
+        """Publish the trajectory setpoint."""
+        msg = TrajectorySetpoint()
+        msg.velocity = [x, y, z]
+        msg.position = [float('nan'),float('nan'),float('nan')]
+        msg.yaw = 0.  # (0 degree)
+        msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
+        self.trajectory_setpoint_publisher.publish(msg)
+        self.get_logger().info(f"Publishing velocity setpoints {[x, y, z]}")
 
     def publish_vehicle_command(self, command, **params) -> None:
         """Publish a vehicle command."""
@@ -121,17 +139,23 @@ class OffboardControl(Node):
     def timer_callback(self) -> None:
         """Callback function for the timer."""
         self.publish_offboard_control_heartbeat_signal()
+        self.get_logger().info(f"pos [{self.vehicle_local_position.x:.2f}, {self.vehicle_local_position.y:.2f}, {self.vehicle_local_position.z:.2f}]")
 
         if self.offboard_setpoint_counter == 10:
             self.engage_offboard_mode()
             self.arm()
 
         if self.vehicle_local_position.z > self.takeoff_height and self.vehicle_status.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD:
-            self.publish_position_setpoint(0.0, 0.0, self.takeoff_height)
+            self.publish_velocity_setpoint(0.0, 0.0, -10)
 
         elif self.vehicle_local_position.z <= self.takeoff_height:
-            self.land()
-            exit(0)
+            global cam
+            offset_x, offset_y, line_heading = process_image_line(cam.get_next_image())
+            x,y,z = move_drone_line(offset_x, offset_y, line_heading, speed=0.001)
+            self.get_logger().info(f"line vel [{x:.2f}, {y:.2f}, {z:.2f}]")
+            self.publish_velocity_setpoint(x,y,z)
+            #self.land()
+            #exit(0)
 
         if self.offboard_setpoint_counter < 11:
             self.offboard_setpoint_counter += 1
@@ -139,7 +163,6 @@ class OffboardControl(Node):
 
 # Camera module
 def launch_cam_receiver():
-  cam = GzCam("/camera", (640,480))
   while True:
     img = cam.get_next_image()
     cv2.imshow('pic-display', img)
@@ -147,13 +170,22 @@ def launch_cam_receiver():
 
 
 def main(args=None) -> None:
-    print('Starting camera...')
-    cam_thread = threading.Thread(target=launch_cam_receiver)
-    cam_thread.start()
+    
 
     print('Starting offboard control node...')
     rclpy.init(args=args)
+
     offboard_control = OffboardControl()
+    global cam
+    cam = GzCam("/camera", (640,480))
+
+    global headless
+    if not headless:
+        print('Starting camera...')
+        cam_thread = threading.Thread(target=launch_cam_receiver)
+        cam_thread.start()
+
+    
     rclpy.spin(offboard_control)
 
     offboard_control.destroy_node()
