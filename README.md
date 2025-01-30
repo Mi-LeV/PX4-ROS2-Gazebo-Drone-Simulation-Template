@@ -54,7 +54,7 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
   ```bash
   PX4_SYS_AUTOSTART=4010 \
   PX4_SIM_MODEL=gz_x500_down_cam \
-  PX4_GZ_MODEL_POSE="1,1,0.1,0,0,0.9" \
+  PX4_GZ_MODEL_POSE="2.2,2.5,0.1,0,0,1.57" \
   PX4_GZ_WORLD=test_world \
   ~/PX4-Autopilot/build/px4_sitl_default/bin/px4
   ```
@@ -74,17 +74,12 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
 
 - In a new terminal, build and run the ROS2 node:
   ```bash
-  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2
-  colcon build
-  source install/local_setup.bash
-  ros2 run my_offboard_ctrl offboard_ctrl_example
+  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ;colcon build ; source install/local_setup.bash ; ros2 run my_offboard_ctrl offboard_ctrl_example --ros-args -p headless:=true
   ```
 
 - To build only the `my_offboard_ctrl` package:
   ```bash
-  colcon build --packages-select my_offboard_ctrl
-  source install/local_setup.bash
-  ros2 run my_offboard_ctrl offboard_ctrl_example
+  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ; colcon build --packages-select my_offboard_ctrl ; source install/local_setup.bash ; ros2 run my_offboard_ctrl offboard_ctrl_example --ros-args -p headless:=true
   ```
 
   For additional details, refer to the [ROS2 Package documentation](https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html).
