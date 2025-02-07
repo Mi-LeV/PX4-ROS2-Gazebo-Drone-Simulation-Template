@@ -30,11 +30,11 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
    cp -r ./PX4-Autopilot_PATCH/* ~/PX4-Autopilot/
    ```
 
-3. Install **QGroundControl**.
+3. ( Install **QGroundControl**. )
 
 ## Usage (First Launch)
 
-### 1. Launch QGroundControl
+### 1. ( Launch QGroundControl )
 
 - Open **QGroundControl**.
 
@@ -72,14 +72,15 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
 
 ### 4. Build and Run the ROS2 Node (Companion Computer Software)
 
-- In a new terminal, build and run the ROS2 node:
+- In a new terminal, build and run all ROS2 nodes :
   ```bash
   cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ;colcon build ; source install/local_setup.bash ; ros2 run my_offboard_ctrl offboard_ctrl_example --ros-args -p headless:=true
   ```
 
-- To build only the `my_offboard_ctrl` package:
+- To build only the `my_offboard_ctrl` package :
   ```bash
   cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ; colcon build --packages-select my_offboard_ctrl ; source install/local_setup.bash ; ros2 run my_offboard_ctrl offboard_ctrl_example --ros-args -p headless:=true
   ```
+  To activate the camera window, set the `headless` argument to false.
 
   For additional details, refer to the [ROS2 Package documentation](https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html).
