@@ -900,5 +900,5 @@
   </library_visual_scenes>
   <scene>
     <instance_visual_scene url="#Scene"/>
-  </scene>
+  </scene> 
 </COLLADA>
