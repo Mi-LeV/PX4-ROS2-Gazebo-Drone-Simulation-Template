@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 4.3.2 commit date:2024-12-16, commit time:21:10, hash:32f5fdce0a0a</authoring_tool>
     </contributor>
-    <created>2025-02-08T20:35:02</created>
-    <modified>2025-02-08T20:35:02</modified>
+    <created>2025-02-09T13:07:39</created>
+    <modified>2025-02-09T13:07:39</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -423,14 +423,14 @@
     </effect>
     <effect id="aruco_0-effect">
       <profile_COMMON>
-        <newparam sid="_x6_1000-0_png-surface">
+        <newparam sid="_x4_250-0_png-surface">
           <surface type="2D">
-            <init_from>_x6_1000-0_png</init_from>
+            <init_from>_x4_250-0_png</init_from>
           </surface>
         </newparam>
-        <newparam sid="_x6_1000-0_png-sampler">
+        <newparam sid="_x4_250-0_png-sampler">
           <sampler2D>
-            <source>_x6_1000-0_png-surface</source>
+            <source>_x4_250-0_png-surface</source>
           </sampler2D>
         </newparam>
         <technique sid="common">
@@ -439,7 +439,7 @@
               <color sid="emission">0 0 0 1</color>
             </emission>
             <diffuse>
-              <texture texture="_x6_1000-0_png-sampler" texcoord="aruco_0-mesh-map-0"/>
+              <texture texture="_x4_250-0_png-sampler" texcoord="aruco_0-mesh-map-0"/>
             </diffuse>
             <index_of_refraction>
               <float sid="ior">1.5</float>
@@ -450,8 +450,8 @@
     </effect>
   </library_effects>
   <library_images>
-    <image id="_x6_1000-0_png" name="_x6_1000-0_png">
-      <init_from>6x6_1000-0.png</init_from>
+    <image id="_x4_250-0_png" name="_x4_250-0_png">
+      <init_from>4x4_250-0.png</init_from>
     </image>
     <image id="aire_jeux_png" name="aire_jeux_png">
       <init_from>aire_jeux.png</init_from>
@@ -934,7 +934,7 @@
         </instance_geometry>
       </node>
       <node id="aruco_0" name="aruco_0" type="NODE">
-        <matrix sid="transform">-1 8.74228e-8 0 1.30177 -8.74228e-8 -1 0 1.045623 0 0 1 0.01 0 0 0 1</matrix>
+        <matrix sid="transform">-0.25 2.18557e-8 0 1.30177 -2.18557e-8 -0.25 0 0.7956229 0 0 1 0.01 0 0 0 1</matrix>
         <instance_geometry url="#aruco_0-mesh" name="aruco_0">
           <bind_material>
             <technique_common>
