@@ -84,3 +84,6 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
   To activate the camera window, set the `headless` argument to false.
 
   For additional details, refer to the [ROS2 Package documentation](https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html).
+  ```bash
+  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ; colcon build --packages-select ros2_aruco ; source install/local_setup.bash ; ros2 run ros2_aruco aruco_node
+  ```
