@@ -4,7 +4,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
 from px4_msgs.msg import OffboardControlMode, TrajectorySetpoint, VehicleCommand, VehicleLocalPosition, VehicleStatus
-
+from ros2_aruco_interfaces.msg import ArucoMarkers
 # Camera module
 import cv2
 from .gzcam import GzCam
@@ -20,7 +20,7 @@ class OffboardControl(Node):
     """Node for controlling a vehicle in offboard mode."""
 
     def __init__(self) -> None:
-        super().__init__('offboard_control_takeoff_and_land')
+        super().__init__('offboard_ctrl')
 
         # Configure QoS profile for publishing and subscribing
         qos_profile = QoSProfile(
@@ -43,6 +43,10 @@ class OffboardControl(Node):
             VehicleLocalPosition, '/fmu/out/vehicle_local_position', self.vehicle_local_position_callback, qos_profile)
         self.vehicle_status_subscriber = self.create_subscription(
             VehicleStatus, '/fmu/out/vehicle_status', self.vehicle_status_callback, qos_profile)
+        
+        self.aruco_markers_subscriber = self.create_subscription(
+            ArucoMarkers, '/aruco_markers', self.aruco_markers_callback, qos_profile)
+
 
         # Initialize variables
         global headless
@@ -51,7 +55,9 @@ class OffboardControl(Node):
         self.offboard_setpoint_counter = 0
         self.vehicle_local_position = VehicleLocalPosition()
         self.vehicle_status = VehicleStatus()
+        self.aruco_markers = ArucoMarkers()
         self.takeoff_height = -1
+        
 
         # Create a timer to publish control commands
         self.timer = self.create_timer(0.1, self.timer_callback)
@@ -63,6 +69,11 @@ class OffboardControl(Node):
     def vehicle_status_callback(self, vehicle_status):
         """Callback function for vehicle_status topic subscriber."""
         self.vehicle_status = vehicle_status
+
+    def aruco_markers_callback(self, aruco_markers):
+        self.aruco_markers = aruco_markers
+        self.get_logger().info(f"received {aruco_markers}")
+
 
     def arm(self):
         """Send an arm command to the vehicle."""
@@ -146,16 +157,22 @@ class OffboardControl(Node):
             self.arm()
 
         if self.vehicle_local_position.z > self.takeoff_height and self.vehicle_status.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD:
-            self.publish_velocity_setpoint(0.0, 0.0, -10)
+            #self.publish_velocity_setpoint(0.0, 0.0, -10)
+            self.publish_position_setpoint(0.0, 0.0, -2)
 
         elif self.vehicle_local_position.z <= self.takeoff_height:
             global cam
-            offset_x, offset_y, line_heading = process_image_line(cam.get_next_image())
-            x,y,z = move_drone_line(offset_x, offset_y, line_heading, speed=0.001)
-            self.get_logger().info(f"line vel [{x:.2f}, {y:.2f}, {z:.2f}]")
-            self.publish_velocity_setpoint(x,y,z)
+            #offset_x, offset_y, line_heading = process_image_line(cam.get_next_image())
+            #x,y,z = move_drone_line(offset_x, offset_y, line_heading, speed=0.001)
+            #self.get_logger().info(f"line vel [{x:.2f}, {y:.2f}, {z:.2f}]")
+            #self.publish_velocity_setpoint(x,y,z)
+
+            
             #self.land()
             #exit(0)
+        #if self.aruco_markers.poses is not None:
+        #    self.get_logger().info(f"aruco {self.aruco_markers.marker_ids} {self.aruco_markers.poses}")
+
 
         if self.offboard_setpoint_counter < 11:
             self.offboard_setpoint_counter += 1
@@ -177,7 +194,7 @@ def main(args=None) -> None:
 
     offboard_control = OffboardControl()
     global cam
-    cam = GzCam("/camera", (640,480))
+    cam = GzCam("/camera/image_raw", (640,480))
 
     global headless
     if not headless:
