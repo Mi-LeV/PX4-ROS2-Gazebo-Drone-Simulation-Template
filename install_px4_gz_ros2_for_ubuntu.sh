@@ -82,6 +82,9 @@ cd
 
 sudo apt install python3-colcon-clean python3-opencv -y
 
+sudo apt install ros-${ROS_DISTRO}-ros-gz-bridge
+sudo apt install ros-$ROS_DISTRO-camera-ros
+
 
 sudo apt autoremove -y
 

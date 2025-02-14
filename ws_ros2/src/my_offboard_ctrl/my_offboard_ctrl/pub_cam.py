@@ -89,7 +89,7 @@ def main(args=None) -> None:
     rclpy.init(args=args)
 
     # Initialize camera object here before node creation
-    cam = GzCam("/camera/image_raw", (640, 480))
+    cam = GzCam("/sim/image_raw", (640, 480))
 
     # Create the node instance
     pub_cam = PubCam()
