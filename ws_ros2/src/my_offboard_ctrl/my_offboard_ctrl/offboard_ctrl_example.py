@@ -72,7 +72,6 @@ class OffboardControl(Node):
 
     def aruco_markers_callback(self, aruco_markers):
         self.aruco_markers = aruco_markers
-        self.get_logger().info(f"received {aruco_markers}")
 
 
     def arm(self):
@@ -170,8 +169,8 @@ class OffboardControl(Node):
             
             #self.land()
             #exit(0)
-        #if self.aruco_markers.poses is not None:
-        #    self.get_logger().info(f"aruco {self.aruco_markers.marker_ids} {self.aruco_markers.poses}")
+        for i, pose in enumerate(self.aruco_markers.poses):
+            self.get_logger().info(f"A{i} [{self.aruco_markers.marker_ids[i]}] {pose.position.x:.2f} {pose.position.y:.2f} {pose.position.z:.2f} | {pose.orientation.x:.2f} {pose.orientation.y:.2f} {pose.orientation.z:.2f} ")
 
 
         if self.offboard_setpoint_counter < 11:

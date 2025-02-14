@@ -29,12 +29,13 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
    cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template
    cp -r ./PX4-Autopilot_PATCH/* ~/PX4-Autopilot/
    ```
+  THIS ACTION IS MANDATORY EVERY TIME THE MODELS OF THE DRONE OR WORLD ARE CHANGED
 
 3. ( Install **QGroundControl**. )
 
 ## Usage (First Launch)
 
-### 1. ( Launch QGroundControl )
+### 1. ( Launch QGroundControl ) - OPTIONAL
 
 - Open **QGroundControl**.
 
@@ -44,9 +45,7 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
   ```bash
   MicroXRCEAgent udp4 -p 8888
   ```
-  The Micro XRCE-DDS Agent allows uORB messages to be published and subscribed to on a companion computer as ROS 2 topics.
-
-  For more information, refer to the [uXRCE-DDS documentation](https://docs.px4.io/main/en/middleware/uxrce_dds.html).
+  The Micro XRCE-DDS Agent allows uORB messages to be published and subscribed to on a companion computer as ROS 2 topics, and is making the liaison with the PX4 flight computer.
 
 ### 3. Run PX4 SITL and Gazebo
 
@@ -63,27 +62,17 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
   - `PX4_GZ_MODEL_POSE="1,1,0.1,0,0,0.9"` sets the initial pose of the vehicle.
   - `PX4_GZ_WORLD=test_world` defines the Gazebo world to be loaded.
 
-  Further information:
-  - [Gazebo Simulation Documentation](https://docs.px4.io/main/en/sim_gazebo_gz/)
-  - [Airframes Reference](https://docs.px4.io/main/en/airframes/airframe_reference.html)
-  - [4010 Airframe File](https://github.com/PX4/PX4-Autopilot/blob/main/ROMFS/px4fmu_common/init.d-posix/airframes/4010_gz_x500_mono_cam)
-
   In case of error message `ERROR [gz_bridge] Service call timed out.` try again.
 
 ### 4. Build and Run the ROS2 Node (Companion Computer Software)
 
 - In a new terminal, build and run all ROS2 nodes :
   ```bash
-  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ;colcon build ; source install/local_setup.bash ; ros2 run my_offboard_ctrl offboard_ctrl_example --ros-args -p headless:=true
+  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ;colcon build ; source install/local_setup.bash ; ros2 launch my_offboard_ctrl my_offboard_ctrl.launch.py
   ```
 
 - To build only the `my_offboard_ctrl` package :
   ```bash
-  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ; colcon build --packages-select my_offboard_ctrl ; source install/local_setup.bash ; ros2 run my_offboard_ctrl offboard_ctrl_example --ros-args -p headless:=true
+  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ; colcon build --packages-select my_offboard_ctrl ; source install/local_setup.bash ; ros2 launch my_offboard_ctrl my_offboard_ctrl.launch.py
   ```
-  To activate the camera window, set the `headless` argument to false.
-
-  For additional details, refer to the [ROS2 Package documentation](https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.html).
-  ```bash
-  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ; colcon build --packages-select ros2_aruco ; source install/local_setup.bash ; ros2 run ros2_aruco aruco_node
-  ```
+  

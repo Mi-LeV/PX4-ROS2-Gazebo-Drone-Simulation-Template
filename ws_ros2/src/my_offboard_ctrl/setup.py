@@ -26,6 +26,7 @@ setup(
             'offboard_ctrl_example = my_offboard_ctrl.offboard_ctrl_example:main',
             'pub_cam = my_offboard_ctrl.pub_cam:main',
             'aruco_node = my_offboard_ctrl.aruco_node:main',
+            'line_node = my_offboard_ctrl.line_recognition:main',
         ],
     },
 )

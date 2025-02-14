@@ -4,7 +4,6 @@ This node locates Aruco AR markers in images and publishes their ids and poses.
 Subscriptions:
    /camera/image_raw (sensor_msgs.msg.Image)
    /camera/camera_info (sensor_msgs.msg.CameraInfo)
-   /camera/camera_info (sensor_msgs.msg.CameraInfo)
 
 Published Topics:
     /aruco_poses (geometry_msgs.msg.PoseArray)
@@ -39,7 +38,7 @@ from sensor_msgs.msg import Image
 from geometry_msgs.msg import PoseArray, Pose
 from ros2_aruco_interfaces.msg import ArucoMarkers
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
-
+from rclpy.qos import QoSProfile, QoSDurabilityPolicy
 
 class ArucoNode(rclpy.node.Node):
     def __init__(self):
@@ -48,7 +47,7 @@ class ArucoNode(rclpy.node.Node):
         # Declare and read parameters
         self.declare_parameter(
             name="marker_size",
-            value=0.25,
+            value=0.25/2,
             descriptor=ParameterDescriptor(
                 type=ParameterType.PARAMETER_DOUBLE,
                 description="Size of the markers in meters.",
@@ -138,8 +137,12 @@ class ArucoNode(rclpy.node.Node):
 
         # Set up publishers
         self.poses_pub = self.create_publisher(PoseArray, "aruco_poses", 10)
-        self.markers_pub = self.create_publisher(ArucoMarkers, "aruco_markers", 10)
+        qos_profile = QoSProfile(
+            depth=10, 
+            durability=QoSDurabilityPolicy.TRANSIENT_LOCAL  # Make it match the subscriber
+        )
 
+        self.markers_pub = self.create_publisher(ArucoMarkers, "aruco_markers", qos_profile)
         # Set up fields for camera parameters
         self.info_msg = None
         self.intrinsic_mat = None
@@ -216,8 +219,6 @@ class ArucoNode(rclpy.node.Node):
 
             self.poses_pub.publish(pose_array)
             self.markers_pub.publish(markers)
-        else:
-            self.get_logger().info("No arucos detected...")
             
     def get_object_points(self):
         """

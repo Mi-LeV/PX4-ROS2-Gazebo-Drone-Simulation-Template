@@ -14,6 +14,10 @@ def generate_launch_description():
         package='my_offboard_ctrl',
         executable='aruco_node',
     )
+    line = Node(
+        package='my_offboard_ctrl',
+        executable='line_node',
+    )
     main_script = Node(
         package='my_offboard_ctrl',
         executable='offboard_ctrl_example',
@@ -21,6 +25,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         pub_cam,
-        #aruco,
+        aruco,
+        line,
         main_script
     ])
