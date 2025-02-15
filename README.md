@@ -66,13 +66,15 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
 
 ### 4. Build and Run the ROS2 Node (Companion Computer Software)
 
-- In a new terminal, build and run all ROS2 nodes :
+- In a new terminal, build and run the `image_processing` package :
   ```bash
-  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ;colcon build ; source install/local_setup.bash ; ros2 launch my_offboard_ctrl my_offboard_ctrl.launch.py
+  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ; colcon build --packages-select image_processing ; source install/local_setup.bash ; ros2 launch image_processing image_processing.launch.py
   ```
 
-- To build only the `my_offboard_ctrl` package :
+- In another terminal, build and run the navigation script:
   ```bash
-  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ; colcon build --packages-select my_offboard_ctrl ; source install/local_setup.bash ; ros2 launch my_offboard_ctrl my_offboard_ctrl.launch.py
+  cd ~/PX4-ROS2-Gazebo-Drone-Simulation-Template/ws_ros2 ; colcon build --packages-select navigation_script ; source install/local_setup.bash ; ros2 launch navigation_script navigation_script.launch.py
   ```
-  
+### STRUCTURE
+
+![Capture nodes / topics](media/rosgraph.png) 

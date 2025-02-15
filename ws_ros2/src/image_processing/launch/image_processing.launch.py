@@ -12,26 +12,18 @@ from launch.substitutions import PythonExpression
 def generate_launch_description():
     # Declare a launch argument to specify simulation mode
     use_sim = LaunchConfiguration("use_sim")
+
     declare_use_sim = DeclareLaunchArgument(
         "use_sim", default_value="true", description="Set to true to use Gazebo camera"
     )
     
-
-    pub_cam = Node(
-        package='my_offboard_ctrl',
-        executable='pub_cam',
-    )
     aruco = Node(
-        package='my_offboard_ctrl',
+        package='image_processing',
         executable='aruco_node',
     )
     line = Node(
-        package='my_offboard_ctrl',
+        package='image_processing',
         executable='line_node',
-    )
-    main_script = Node(
-        package='my_offboard_ctrl',
-        executable='offboard_ctrl_example',
     )
     
     camera_node = Node(
@@ -70,6 +62,5 @@ def generate_launch_description():
         gazebo_to_ros_bridge,
         gazebo_camera_info_bridge,
         aruco,
-        line,
-        main_script
+        line
     ])

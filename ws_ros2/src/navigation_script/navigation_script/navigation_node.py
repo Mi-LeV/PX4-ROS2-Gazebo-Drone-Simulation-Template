@@ -5,22 +5,14 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
 from px4_msgs.msg import OffboardControlMode, TrajectorySetpoint, VehicleCommand, VehicleLocalPosition, VehicleStatus
 from ros2_aruco_interfaces.msg import ArucoMarkers
-# Camera module
-import cv2
-from .gzcam import GzCam
-import threading
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge  # Ensure this is imported
 
-from .line_following import process_image_line, move_drone_line
-
-
-headless = False
-cam = None
-
-class OffboardControl(Node):
+class NavigationNode(Node):
     """Node for controlling a vehicle in offboard mode."""
 
     def __init__(self) -> None:
-        super().__init__('offboard_ctrl')
+        super().__init__('navigation_node')
 
         # Configure QoS profile for publishing and subscribing
         qos_profile = QoSProfile(
@@ -46,12 +38,8 @@ class OffboardControl(Node):
         
         self.aruco_markers_subscriber = self.create_subscription(
             ArucoMarkers, '/aruco_markers', self.aruco_markers_callback, qos_profile)
-
-
-        # Initialize variables
-        global headless
-        headless = self.declare_parameter('headless', False).get_parameter_value().bool_value
         
+
         self.offboard_setpoint_counter = 0
         self.vehicle_local_position = VehicleLocalPosition()
         self.vehicle_status = VehicleStatus()
@@ -72,7 +60,7 @@ class OffboardControl(Node):
 
     def aruco_markers_callback(self, aruco_markers):
         self.aruco_markers = aruco_markers
-
+    
 
     def arm(self):
         """Send an arm command to the vehicle."""
@@ -145,6 +133,24 @@ class OffboardControl(Node):
         msg.from_external = True
         msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
         self.vehicle_command_publisher.publish(msg)
+    
+
+    def move_drone_line(self, offset_x, offset_y, line_heading, speed=0.001):
+        """Generate a movement command based on offsets and line heading."""
+
+        if line_heading is not None: # if the direction of the line is found
+            far_factor = min(max(abs(offset_x), abs(offset_y)), 200) / 200 # normalise the offset between 0 and 1
+
+            # the factor is the weight between centering the drone on the line and going down the line
+            vel_x = (np.cos(line_heading )) *100* speed * (1 - far_factor)\
+            + (-offset_y * speed) * far_factor 
+            vel_y = (np.sin(line_heading))  *100* speed * (1 - far_factor)\
+            + (-offset_x * speed) * far_factor
+        else:
+            vel_x = -offset_y * speed
+            vel_y = -offset_x * speed
+        vel_z = 0.0
+        return vel_x,vel_y,vel_z
 
     def timer_callback(self) -> None:
         """Callback function for the timer."""
@@ -160,7 +166,7 @@ class OffboardControl(Node):
             self.publish_position_setpoint(0.0, 0.0, -2)
 
         elif self.vehicle_local_position.z <= self.takeoff_height:
-            global cam
+            pass
             #offset_x, offset_y, line_heading = process_image_line(cam.get_next_image())
             #x,y,z = move_drone_line(offset_x, offset_y, line_heading, speed=0.001)
             #self.get_logger().info(f"line vel [{x:.2f}, {y:.2f}, {z:.2f}]")
@@ -177,13 +183,6 @@ class OffboardControl(Node):
             self.offboard_setpoint_counter += 1
 
 
-# Camera module
-def launch_cam_receiver():
-  while True:
-    img = cam.get_next_image()
-    cv2.imshow('pic-display', img)
-    cv2.waitKey(1)
-
 
 def main(args=None) -> None:
     
@@ -191,20 +190,11 @@ def main(args=None) -> None:
     print('Starting offboard control node...')
     rclpy.init(args=args)
 
-    offboard_control = OffboardControl()
-    global cam
-    cam = GzCam("/camera/image_raw", (640,480))
-
-    global headless
-    if not headless:
-        print('Starting camera...')
-        cam_thread = threading.Thread(target=launch_cam_receiver)
-        cam_thread.start()
-
+    navigation_node = NavigationNode()
     
-    rclpy.spin(offboard_control)
+    rclpy.spin(navigation_node)
 
-    offboard_control.destroy_node()
+    navigation_node.destroy_node()
     rclpy.shutdown()
 
 

@@ -133,24 +133,6 @@ def process_image_line(image):
 
     
     return offset_x, offset_y, line_heading
-
-
-def move_drone_line(offset_x, offset_y, line_heading, speed=0.001):
-    """Generate a movement command based on offsets and line heading."""
-
-    if line_heading is not None: # if the direction of the line is found
-        far_factor = min(max(abs(offset_x), abs(offset_y)), 200) / 200 # normalise the offset between 0 and 1
-
-        # the factor is the weight between centering the drone on the line and going down the line
-        vel_x = (np.cos(line_heading )) *100* speed * (1 - far_factor)\
-        + (-offset_y * speed) * far_factor 
-        vel_y = (np.sin(line_heading))  *100* speed * (1 - far_factor)\
-        + (-offset_x * speed) * far_factor
-    else:
-        vel_x = -offset_y * speed
-        vel_y = -offset_x * speed
-    vel_z = 0.0
-    return vel_x,vel_y,vel_z
         
 
 def main():

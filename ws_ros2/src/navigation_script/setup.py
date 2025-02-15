@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 import os
 from glob import glob
 
-package_name = 'my_offboard_ctrl'
+package_name = 'navigation_script'
 
 setup(
     name=package_name,
@@ -23,10 +23,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'offboard_ctrl_example = my_offboard_ctrl.offboard_ctrl_example:main',
-            'pub_cam = my_offboard_ctrl.pub_cam:main',
-            'aruco_node = my_offboard_ctrl.aruco_node:main',
-            'line_node = my_offboard_ctrl.line_recognition:main',
+            'navigation_node = navigation_script.navigation_node:main',
         ],
     },
 )
