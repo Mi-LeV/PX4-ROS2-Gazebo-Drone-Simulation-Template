@@ -1,34 +1,8 @@
-"""
-This node locates Aruco AR markers in images and publishes their ids and poses.
-
-Subscriptions:
-   /camera/image_raw (sensor_msgs.msg.Image)
-   /camera/camera_info (sensor_msgs.msg.CameraInfo)
-
-Published Topics:
-    /aruco_poses (geometry_msgs.msg.PoseArray)
-       Pose of all detected markers (suitable for rviz visualization)
-
-    /aruco_markers (ros2_aruco_interfaces.msg.ArucoMarkers)
-       Provides an array of all poses along with the corresponding
-       marker ids.
-
-Parameters:
-    marker_size - size of the markers in meters (default .0625)
-    aruco_dictionary_id - dictionary that was used to generate markers
-                          (default DICT_5X5_250)
-    image_topic - image topic to subscribe to (default /camera/image_raw)
-    camera_info_topic - camera info topic to subscribe to
-                         (default /camera/camera_info)
-
-Author: Nathan Sprague
-Version: 10/26/2020
-
-"""
 
 import rclpy
 import rclpy.node
 from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
 from cv_bridge import CvBridge
 import numpy as np
 import cv2
@@ -66,8 +40,15 @@ class LineNode(rclpy.node.Node):
             Image, image_topic, self.image_callback, qos_profile_sensor_data
         )
 
+        qos_profile = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=1
+        )
+
         # Set up publishers
-        self.poses_pub = self.create_publisher(Pose2D, "line_pose", 10)
+        self.poses_pub = self.create_publisher(Pose2D, "line_pose", qos_profile)
 
         self.bridge = CvBridge()
 
@@ -121,8 +102,12 @@ def process_image_line(image):
         line_center_x = (yellow_center[0] + green_center[0]) // 2
         line_center_y = (yellow_center[1] + green_center[1]) // 2
         line_heading = np.arctan2(green_center[1] - yellow_center[1], green_center[0] - yellow_center[0])
+
+    elif yellow_center or green_center :
+        line_center_x, line_center_y = yellow_center or green_center
+        line_heading = float('nan')
     else:
-        line_center_x, line_center_y = yellow_center or green_center or image_center
+        line_center_x, line_center_y = float('nan'), float('nan')
         line_heading = float('nan')
 
     # Calculate offset from the image center

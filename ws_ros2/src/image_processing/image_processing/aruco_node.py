@@ -6,9 +6,6 @@ Subscriptions:
    /camera/camera_info (sensor_msgs.msg.CameraInfo)
 
 Published Topics:
-    /aruco_poses (geometry_msgs.msg.PoseArray)
-       Pose of all detected markers (suitable for rviz visualization)
-
     /aruco_markers (ros2_aruco_interfaces.msg.ArucoMarkers)
        Provides an array of all poses along with the corresponding
        marker ids.
@@ -35,7 +32,7 @@ import cv2
 from scipy.spatial.transform import Rotation as R  # Replacement for tf_transformations
 from sensor_msgs.msg import CameraInfo
 from sensor_msgs.msg import Image
-from geometry_msgs.msg import PoseArray, Pose
+from geometry_msgs.msg import Pose
 from ros2_aruco_interfaces.msg import ArucoMarkers
 from rcl_interfaces.msg import ParameterDescriptor, ParameterType
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy
@@ -134,9 +131,7 @@ class ArucoNode(rclpy.node.Node):
         self.create_subscription(
             Image, image_topic, self.image_callback, qos_profile_sensor_data
         )
-
-        # Set up publishers
-        self.poses_pub = self.create_publisher(PoseArray, "aruco_poses", 10)
+        
         qos_profile = QoSProfile(
             depth=10, 
             durability=QoSDurabilityPolicy.TRANSIENT_LOCAL  # Make it match the subscriber
@@ -167,16 +162,12 @@ class ArucoNode(rclpy.node.Node):
 
         cv_image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding="mono8")
         markers = ArucoMarkers()
-        pose_array = PoseArray()
         if self.camera_frame == "":
             markers.header.frame_id = self.info_msg.header.frame_id
-            pose_array.header.frame_id = self.info_msg.header.frame_id
         else:
             markers.header.frame_id = self.camera_frame
-            pose_array.header.frame_id = self.camera_frame
 
         markers.header.stamp = img_msg.header.stamp
-        pose_array.header.stamp = img_msg.header.stamp
 
         corners, marker_ids, rejected = cv2.aruco.detectMarkers(
             cv_image, self.aruco_dictionary, parameters=self.aruco_parameters
@@ -213,11 +204,9 @@ class ArucoNode(rclpy.node.Node):
                 pose.orientation.z = quat[2]
                 pose.orientation.w = quat[3]
 
-                pose_array.poses.append(pose)
                 markers.poses.append(pose)
                 markers.marker_ids.append(marker_id[0])
 
-            self.poses_pub.publish(pose_array)
             self.markers_pub.publish(markers)
             
     def get_object_points(self):

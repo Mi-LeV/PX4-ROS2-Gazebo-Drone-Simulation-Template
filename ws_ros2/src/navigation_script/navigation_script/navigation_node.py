@@ -5,6 +5,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
 from px4_msgs.msg import OffboardControlMode, TrajectorySetpoint, VehicleCommand, VehicleLocalPosition, VehicleStatus
 from ros2_aruco_interfaces.msg import ArucoMarkers
+from geometry_msgs.msg import Pose2D
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge  # Ensure this is imported
 
@@ -32,34 +33,43 @@ class NavigationNode(Node):
 
         # Create subscribers
         self.vehicle_local_position_subscriber = self.create_subscription(
-            VehicleLocalPosition, '/fmu/out/vehicle_local_position', self.vehicle_local_position_callback, qos_profile)
+            VehicleLocalPosition, '/fmu/out/vehicle_local_position', self.vehicle_local_position_cb, qos_profile)
         self.vehicle_status_subscriber = self.create_subscription(
-            VehicleStatus, '/fmu/out/vehicle_status', self.vehicle_status_callback, qos_profile)
+            VehicleStatus, '/fmu/out/vehicle_status', self.vehicle_status_cb, qos_profile)
         
         self.aruco_markers_subscriber = self.create_subscription(
-            ArucoMarkers, '/aruco_markers', self.aruco_markers_callback, qos_profile)
-        
+            ArucoMarkers, '/aruco_markers', self.aruco_markers_cb, qos_profile)
 
-        self.offboard_setpoint_counter = 0
+        self.line_pose_subscriber = self.create_subscription(
+            Pose2D, '/line_pose', self.line_pose_cb, qos_profile)
+        
+        
         self.vehicle_local_position = VehicleLocalPosition()
         self.vehicle_status = VehicleStatus()
         self.aruco_markers = ArucoMarkers()
+        self.line_pose = Pose2D() 
+
+        self.command_delay_counter = 0
         self.takeoff_height = -1
+        self.nav_state = "idle" #idle, takeoff,task1,task2,task3...,land
         
 
         # Create a timer to publish control commands
-        self.timer = self.create_timer(0.1, self.timer_callback)
+        self.timer = self.create_timer(0.1, self.timer_cb)
 
-    def vehicle_local_position_callback(self, vehicle_local_position):
-        """Callback function for vehicle_local_position topic subscriber."""
+    def vehicle_local_position_cb(self, vehicle_local_position):
+        """cb function for vehicle_local_position topic subscriber."""
         self.vehicle_local_position = vehicle_local_position
 
-    def vehicle_status_callback(self, vehicle_status):
-        """Callback function for vehicle_status topic subscriber."""
+    def vehicle_status_cb(self, vehicle_status):
+        """cb function for vehicle_status topic subscriber."""
         self.vehicle_status = vehicle_status
 
-    def aruco_markers_callback(self, aruco_markers):
+    def aruco_markers_cb(self, aruco_markers):
         self.aruco_markers = aruco_markers
+    
+    def line_pose_cb(self, line_pose):
+        self.line_pose = line_pose
     
 
     def arm(self):
@@ -152,35 +162,47 @@ class NavigationNode(Node):
         vel_z = 0.0
         return vel_x,vel_y,vel_z
 
-    def timer_callback(self) -> None:
-        """Callback function for the timer."""
+    def timer_cb(self) -> None:
+        """cb function for the timer."""
         self.publish_offboard_control_heartbeat_signal()
-        self.get_logger().info(f"pos [{self.vehicle_local_position.x:.2f}, {self.vehicle_local_position.y:.2f}, {self.vehicle_local_position.z:.2f}]")
 
-        if self.offboard_setpoint_counter == 10:
-            self.engage_offboard_mode()
-            self.arm()
+        if self.nav_state == "idle":
+            if self.command_delay_counter == 10:
+                self.engage_offboard_mode()
+                self.arm()
 
-        if self.vehicle_local_position.z > self.takeoff_height and self.vehicle_status.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD:
-            #self.publish_velocity_setpoint(0.0, 0.0, -10)
-            self.publish_position_setpoint(0.0, 0.0, -2)
+            if self.vehicle_local_position.z > self.takeoff_height \
+                and self.vehicle_status.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD:
+                self.nav_state = "takeoff"
 
-        elif self.vehicle_local_position.z <= self.takeoff_height:
-            pass
-            #offset_x, offset_y, line_heading = process_image_line(cam.get_next_image())
-            #x,y,z = move_drone_line(offset_x, offset_y, line_heading, speed=0.001)
-            #self.get_logger().info(f"line vel [{x:.2f}, {y:.2f}, {z:.2f}]")
-            #self.publish_velocity_setpoint(x,y,z)
+        elif self.nav_state == "takeoff":
+            self.publish_position_setpoint(0.0, 0.0, self.takeoff_height * 3) # times 3 to T/O faster
 
-            
-            #self.land()
-            #exit(0)
-        for i, pose in enumerate(self.aruco_markers.poses):
+            if self.vehicle_local_position.z <= self.takeoff_height:
+                self.nav_state = "task1"
+
+        if self.nav_state == "task1":
+            self.nav_state = "land"
+
+        if self.nav_state == "land":
+            if self.command_delay_counter == 10:
+                self.land()
+                
+            if self.vehicle_status.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LAND:
+                exit(0)
+        
+        if self.command_delay_counter > 10:
+            self.command_delay_counter = 0
+        else:
+            self.command_delay_counter += 1
+
+        for i, pose in enumerate(self.aruco_markers.poses): # print arucos
             self.get_logger().info(f"A{i} [{self.aruco_markers.marker_ids[i]}] {pose.position.x:.2f} {pose.position.y:.2f} {pose.position.z:.2f} | {pose.orientation.x:.2f} {pose.orientation.y:.2f} {pose.orientation.z:.2f} ")
 
+        self.get_logger().info(f"L [{self.line_pose.x:.2f} {self.line_pose.y:.2f} {self.line_pose.theta:.2f}]")
 
-        if self.offboard_setpoint_counter < 11:
-            self.offboard_setpoint_counter += 1
+        self.get_logger().info(f"S {self.nav_state} POS [{self.vehicle_local_position.x:.2f}, {self.vehicle_local_position.y:.2f}, {self.vehicle_local_position.z:.2f}]")
+
 
 
 
