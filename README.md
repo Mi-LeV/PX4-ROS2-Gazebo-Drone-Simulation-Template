@@ -35,8 +35,8 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
 
 ## Usage (First Launch)
 
-[![Full launch process :](https://raw.githubusercontent.com/Mi-LeV/PX4-ROS2-Gazebo-Drone-Simulation-Template/edit/main/media/rosgraph.png)](https://raw.githubusercontent.com/Mi-LeV/PX4-ROS2-Gazebo-Drone-Simulation-Template/edit/main/media/launch_tuto.mp4)
-![Full launch process :]() 
+[![Full launch process :](https://raw.githubusercontent.com/Mi-LeV/PX4-ROS2-Gazebo-Drone-Simulation-Template/main/media/rosgraph.png)](https://raw.githubusercontent.com/Mi-LeV/PX4-ROS2-Gazebo-Drone-Simulation-Template/main/media/launch_tuto.mp4)
+
 
 ### 1. ( Launch QGroundControl ) - OPTIONAL
 
