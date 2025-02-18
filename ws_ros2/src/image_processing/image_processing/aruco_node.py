@@ -187,8 +187,8 @@ class ArucoNode(rclpy.node.Node):
                 print(f"Marker ID: {marker_ids[i]} | tvec: {tvec[:,0]} | rvec: {rvec[:,0]}")
 
                 pose = Pose()
-                pose.position.x = tvec[:,0][0]
-                pose.position.y = tvec[:,0][1]
+                pose.position.x = tvec[:,0][0] + self.marker_size / 2.0
+                pose.position.y = tvec[:,0][1] + self.marker_size / 2.0
                 pose.position.z = tvec[:,0][2]
 
                 rot_matrix, _ = cv2.Rodrigues(rvec)

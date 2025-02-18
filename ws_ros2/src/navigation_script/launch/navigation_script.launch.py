@@ -12,7 +12,7 @@ def generate_launch_description():
     
     main_script = Node(
         package='navigation_script',
-        executable='navigation_node',
+        executable='hover_aruco',
     )
 
     camera_node = Node(

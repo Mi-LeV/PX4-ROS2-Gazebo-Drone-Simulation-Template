@@ -153,6 +153,19 @@ class NavigationNode(Node):
         msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
         self.vehicle_command_publisher.publish(msg)
     
+    def reset_home(self):
+        """Reset the home location of the vehicle."""
+        command = 179  # MAV_CMD_NAV_SET_HOME command ID
+        params = {
+            "param1": 1.0,  # Set home to current location (1 = current location, 0 = GPS location)
+            "param2": 0.0,  # Latitude (not needed when param1 is set to 1)
+            "param3": 0.0,  # Longitude (not needed when param1 is set to 1)
+            "param4": 0.0,  # Altitude (not needed when param1 is set to 1)
+            "param5": 0.0,  # Desired home altitude
+            "param6": 0.0,  # Optional parameter, leave as 0
+            "param7": 0.0   # Optional parameter, leave as 0
+        }
+        self.publish_vehicle_command(command, **params)
 
     def move_drone_line(self, offset_x, offset_y, line_heading, speed=0.001):
         """Generate a movement command based on offsets and line heading."""
@@ -179,22 +192,31 @@ class NavigationNode(Node):
             if self.command_delay_counter == 10:
                 self.engage_offboard_mode()
                 self.arm()
+                self.reset_home()
 
             if self.vehicle_local_position.z > self.takeoff_height \
                 and self.vehicle_status.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD:
                 self.nav_state = "TAKEOFF"
 
         elif self.nav_state == "TAKEOFF":
-            self.publish_position_setpoint(0.0, 0.0, self.takeoff_height * 3) # times 3 to T/O faster
+            self.publish_position_setpoint(0.0, 0.0, self.takeoff_height, 0.0, 0.0, -3.0) 
 
             if self.vehicle_local_position.z <= self.takeoff_height:
-                self.nav_state = "task1"
+                self.nav_state = "HOVER_ARUCO"
 
-        if self.nav_state == "task1":
-            self.open_gripper(True)
-            self.open_gripper(False)
-            self.open_gripper(True)
-            self.nav_state = "LAND"
+        if self.nav_state == "HOVER_ARUCO":
+
+            
+            if 0 in self.aruco_markers.marker_ids:
+                aruco_i = self.aruco_markers.marker_ids.index(0)
+                pose = self.aruco_markers.poses[aruco_i]
+                self.publish_position_setpoint(-pose.position.x,\
+                 -pose.position.y, -pose.position.z - 0.5, 1.0, 1.0, 0.01)
+                
+                self.get_logger().info(f"COMMAND [{-pose.position.x:.2f}, {-pose.position.y:.2f}, {(-pose.position.z-0.5):.2f}]")
+
+
+            #self.nav_state = "LAND"
 
         if self.nav_state == "LAND":
             if self.command_delay_counter == 10:

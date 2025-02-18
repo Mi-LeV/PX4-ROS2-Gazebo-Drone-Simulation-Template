@@ -85,6 +85,7 @@ The `image_processing` package runs :
 - `gz_image_bridge`, `gz_camera_info_bridge` : those nodes pass the camera topics from Gazebo to ROS2, OR RPI3 camera topics to ROS2 when the parameter `use_sim` is set to true ( `use_sim:=false` )
 - `aruco_node`, `line_node` : those nodes process the camera image from `camera/image_raw`, and publish their output into `aruco_markers` and `line_pos` respectively. 
 `aruco_markers` contains the markers IDs, and the 3D poses of the arucos ; `line_node` contains the 2D pose of the yellow-green line ( it returns NaN if nothing is detected ).
+- `gripper_node` : this node moves the gripper servomotor on the RPI by controlling the PWM signal on pin 18, it uses the string topic `/gripper` with the valid commands open and close.
 
 The `navigation_script` package runs : 
 - `navigation_node` : this node receives information from all the processing nodes, excecute the navigation startegy ( arm, takeoff, follow the line, ...) and communicates with the PX4 via the `/fmu/in` and `/fmu/out` topics (created with the MicroXRCE Agent) to send position and velocity commands. 

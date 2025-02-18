@@ -27,6 +27,7 @@ setup(
             'pub_cam = image_processing.pub_cam:main',
             'aruco_node = image_processing.aruco_node:main',
             'line_node = image_processing.line_recognition:main',
+            'gripper_control = image_processing.gripper_control:main',
         ],
     },
 )

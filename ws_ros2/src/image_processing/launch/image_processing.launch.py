@@ -35,6 +35,12 @@ def generate_launch_description():
         condition=IfCondition(PythonExpression(["'", LaunchConfiguration("use_sim"), "' == 'false'"])),
     )
 
+    gripper_control = Node(
+        package="image_processing",
+        executable="gripper_control",
+        parameters=[{"use_sim": use_sim}],
+        )
+
     gazebo_to_ros_bridge = Node(
         package="ros_gz_bridge",
         executable="parameter_bridge",
@@ -62,5 +68,6 @@ def generate_launch_description():
         gazebo_to_ros_bridge,
         gazebo_camera_info_bridge,
         aruco,
-        line
+        line,
+        gripper_control
     ])
