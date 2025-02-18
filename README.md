@@ -35,7 +35,8 @@ This setup is tested on Ubuntu 24.04 and might not be compatible with its deriva
 
 ## Usage (First Launch)
 
-![Full launch process :](media/launch_tuto.mp4) 
+[![Full launch process :](https://raw.githubusercontent.com/Mi-LeV/PX4-ROS2-Gazebo-Drone-Simulation-Template/main/media/rosgraph.png)](https://raw.githubusercontent.com/Mi-LeV/PX4-ROS2-Gazebo-Drone-Simulation-Template/main/media/launch_tuto.mp4)
+
 
 ### 1. ( Launch QGroundControl ) - OPTIONAL
 
@@ -92,5 +93,5 @@ The `navigation_script` package runs :
 - `camera_viewer` : this node just displays the camera image from `camera/image_raw` to the user.
 
 Philosophy : 
-- Launch the image_processing launch script and let it run in the background
-- Launch the navigation_script launch script to start the flight !
+- Launch the `image_processing` launch script and let it run in the background
+- Launch the `navigation_script` launch script to start the flight !
