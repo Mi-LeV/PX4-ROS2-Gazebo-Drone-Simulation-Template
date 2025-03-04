@@ -122,17 +122,17 @@ class NavigationNode(Node):
         msg.yaw = 0.  # (0 degree)
         msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
         self.trajectory_setpoint_publisher.publish(msg)
-        self.get_logger().info(f"POS CMD [{msg.position[0]:.2f}, {msg.position[1]:.2f}, {msg.position[2]:.2f}]")
+        self.get_logger().info(f"POS CMD [{x:.2f}, {y:.2f}, {z:.2f}]")
     
-    def publish_velocity_setpoint(self,  vx: float = float('nan'), vy: float= float('nan'), vz: float= float('nan')):
+    def publish_velocity_setpoint(self, x: float, y: float, z: float):
         """Publish the trajectory setpoint."""
         msg = TrajectorySetpoint()
-        msg.velocity = [vx, vy, vz]
+        msg.velocity = [x, y, z]
         msg.position = [float('nan'),float('nan'),float('nan')]
         msg.yaw = 0.  # (0 degree)
         msg.timestamp = int(self.get_clock().now().nanoseconds / 1000)
         self.trajectory_setpoint_publisher.publish(msg)
-        self.get_logger().info(f"VEL CMD [{vx:.2f}, {vy:.2f}, {vz:.2f}]")
+        self.get_logger().info(f"Publishing velocity setpoints {[x, y, z]}")
 
     def publish_vehicle_command(self, command, **params) -> None:
         """Publish a vehicle command."""
@@ -201,23 +201,14 @@ class NavigationNode(Node):
                 self.nav_state = "TAKEOFF"
 
         elif self.nav_state == "TAKEOFF":
-            self.publish_position_setpoint(0.0, 0.0, self.takeoff_height, vz=-1.0) 
+            self.publish_position_setpoint(0.0, 0.0, self.takeoff_height,vz=-3.0) 
 
             if self.vehicle_local_position.z <= self.takeoff_height:
-                self.nav_state = "HOVER_ARUCO"
+                self.nav_state = "HOVER"
 
-        if self.nav_state == "HOVER_ARUCO":
+        if self.nav_state == "HOVER":
 
-            
-            if 0 in self.aruco_markers.marker_ids:
-                aruco_i = self.aruco_markers.marker_ids.index(0)
-                pose = self.aruco_markers.poses[aruco_i]
-                
-                command_x = self.vehicle_local_position.x + pose.position.x
-                command_y = self.vehicle_local_position.y + pose.position.y
-                command_z = self.vehicle_local_position.z - (pose.position.z - 1.5) 
-
-                self.publish_position_setpoint(command_x, command_y, -2.0, vz=0.01)
+            self.publish_position_setpoint(0.0, 0.0, self.takeoff_height) 
 
 
             #self.nav_state = "LAND"
@@ -233,11 +224,6 @@ class NavigationNode(Node):
             self.command_delay_counter = 0
         else:
             self.command_delay_counter += 1
-
-        for i, pose in enumerate(self.aruco_markers.poses): # print arucos
-            self.get_logger().info(f"A{i} [{self.aruco_markers.marker_ids[i]}] {pose.position.x:.2f} {pose.position.y:.2f} {pose.position.z:.2f} | {pose.orientation.x:.2f} {pose.orientation.y:.2f} {pose.orientation.z:.2f} ")
-
-        #self.get_logger().info(f"L [{self.line_pose.x:.2f} {self.line_pose.y:.2f} {self.line_pose.theta:.2f}]")
 
         self.get_logger().info(f"{self.nav_state} POS [{self.vehicle_local_position.x:.2f}, {self.vehicle_local_position.y:.2f}, {self.vehicle_local_position.z:.2f}]")
 

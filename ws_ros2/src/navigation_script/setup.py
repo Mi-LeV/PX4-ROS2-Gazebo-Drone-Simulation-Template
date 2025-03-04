@@ -24,6 +24,7 @@ setup(
     entry_points={
         'console_scripts': [
             'navigation_node = navigation_script.navigation_node:main',
+            'hover = navigation_script.hover:main',
             'hover_aruco = navigation_script.hover_aruco:main',
         ],
     },

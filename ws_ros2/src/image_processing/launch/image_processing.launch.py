@@ -68,6 +68,6 @@ def generate_launch_description():
         gazebo_to_ros_bridge,
         gazebo_camera_info_bridge,
         aruco,
-        line,
-        gripper_control
+        #line,
+        #gripper_control
     ])
