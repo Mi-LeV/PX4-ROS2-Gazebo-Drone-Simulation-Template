@@ -54,7 +54,7 @@ class NavigationNode(Node):
         self.line_pose = Pose2D() 
 
         self.command_delay_counter = 0
-        self.takeoff_height = -2.0
+        self.takeoff_height = -1.5
         self.nav_state = "IDLE" #idle, takeoff,task1,task2,task3...,land
         
 
@@ -107,7 +107,7 @@ class NavigationNode(Node):
         """Publish the offboard control mode."""
         msg = OffboardControlMode()
         msg.position = True
-        msg.velocity = False
+        msg.velocity = True
         msg.acceleration = False
         msg.attitude = False
         msg.body_rate = False
@@ -213,11 +213,11 @@ class NavigationNode(Node):
                 aruco_i = self.aruco_markers.marker_ids.index(0)
                 pose = self.aruco_markers.poses[aruco_i]
                 
-                command_x = self.vehicle_local_position.x + pose.position.x
-                command_y = self.vehicle_local_position.y + pose.position.y
-                command_z = self.vehicle_local_position.z - (pose.position.z - 1.5) 
+                command_x = self.vehicle_local_position.x - pose.position.x
+                command_y = self.vehicle_local_position.y - pose.position.y
+                command_z = self.vehicle_local_position.z - (pose.position.z + self.takeoff_height) 
 
-                self.publish_position_setpoint(command_x, command_y, -2.0, vz=0.01)
+                self.publish_position_setpoint(command_x, command_y, command_z)
 
 
             #self.nav_state = "LAND"
