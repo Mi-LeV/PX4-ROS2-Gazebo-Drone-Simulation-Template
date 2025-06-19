@@ -1,6 +1,8 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
-package_name = 'my_offboard_ctrl'
+package_name = 'image_processing'
 
 setup(
     name=package_name,
@@ -10,6 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -20,7 +23,11 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'offboard_ctrl_example = my_offboard_ctrl.offboard_ctrl_example:main'
+            'offboard_ctrl_example = image_processing.offboard_ctrl_example:main',
+            'pub_cam = image_processing.pub_cam:main',
+            'aruco_node = image_processing.aruco_node:main',
+            'line_node = image_processing.line_recognition:main',
+            'gripper_control = image_processing.gripper_control:main',
         ],
     },
 )
