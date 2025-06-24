@@ -9,8 +9,17 @@ from launch.conditions import IfCondition
 from launch.substitutions import PythonExpression
 
 
+
 def generate_launch_description():
     # Declare a launch argument to specify simulation mode
+
+    x_offset = 0
+    y_offset = 0
+    height = 480
+    width = 640
+    camera_info_topic = "/camera/camera_info"
+    image_topic = "/camera/image_raw"
+
     use_sim = LaunchConfiguration("use_sim")
 
     declare_use_sim = DeclareLaunchArgument(
@@ -20,10 +29,14 @@ def generate_launch_description():
     aruco = Node(
         package='image_processing',
         executable='aruco_node',
+        parameters=[{"image_topic" : image_topic,
+                "camera_info_topic" : camera_info_topic,}],
     )
     line = Node(
         package='image_processing',
         executable='line_node',
+        parameters=[{"image_topic" : image_topic,
+                "camera_info_topic" : camera_info_topic,}],
     )
     
     camera_node = Node(
@@ -31,7 +44,8 @@ def generate_launch_description():
         executable="camera_node",
         name="camera",
         output="screen",
-        parameters=[{"image_topic": "/image_raw"}],
+        parameters=[
+            {"image_topic": image_topic},],
         condition=IfCondition(PythonExpression(["'", LaunchConfiguration("use_sim"), "' == 'false'"])),
     )
 

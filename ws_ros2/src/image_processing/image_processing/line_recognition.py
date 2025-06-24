@@ -18,23 +18,10 @@ class LineNode(rclpy.node.Node):
     def __init__(self):
         super().__init__("line_node")
 
-        self.declare_parameter(
-            name="image_topic",
-            value="/camera/image_raw",
-            descriptor=ParameterDescriptor(
-                type=ParameterType.PARAMETER_STRING,
-                description="Image topic to subscribe to.",
-            ),
-        )
+        image_topic = self.get_parameter("image_topic").get_parameter_value().string_value
+        info_topic = self.get_parameter("camera_info_topic").get_parameter_value().string_value
 
-
-        image_topic = (
-            self.get_parameter("image_topic").get_parameter_value().string_value
-        )
         self.get_logger().info(f"Image topic: {image_topic}")
-
-
-
 
         self.create_subscription(
             Image, image_topic, self.image_callback, qos_profile_sensor_data
@@ -54,7 +41,6 @@ class LineNode(rclpy.node.Node):
 
 
     def image_callback(self, img_msg):
-
 
         cv_image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding="rgb8")
         
