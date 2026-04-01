@@ -189,8 +189,6 @@ class NavigationNode(Node):
         self.publish_offboard_control_heartbeat_signal()
 
         if self.nav_state == "IDLE":
-            if self.command_delay_counter == 10:
-                self.engage_offboard_mode()
             if self.command_delay_counter == 15:
                 self.arm()
             #if self.command_delay_counter == 20:
@@ -213,8 +211,8 @@ class NavigationNode(Node):
                 aruco_i = self.aruco_markers.marker_ids.index(0)
                 pose = self.aruco_markers.poses[aruco_i]
                 
-                command_x = self.vehicle_local_position.x - pose.position.x
-                command_y = self.vehicle_local_position.y - pose.position.y
+                command_x = self.vehicle_local_position.x + pose.position.x
+                command_y = self.vehicle_local_position.y + pose.position.y
                 command_z = self.vehicle_local_position.z - (pose.position.z + self.takeoff_height) 
 
                 self.publish_position_setpoint(command_x, command_y, command_z)
